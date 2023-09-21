@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 public interface MedicoRepository extends JpaRepository<Medico, Long> {
     Page<Medico> findByActivoTrue(Pageable paginacion);
 
+    //primer cambio en intellij
+
     //consulta a la base de datos
     @Query("""
             seelct m from Medico m
