@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import med.voll.api.domain.direccion.Direccion;
 
 @Table(name= "pacientes")
 @Entity(name= "Paciente")
@@ -22,36 +23,28 @@ public class Paciente {
     private String email;
     private String identidad;
     private String telefono;
-    private String urbanizacion;
-    private String distrito;
-    private String CP;
-    private String complemento;
-    private String numero;
-    private String provincia;
-    private String ciudad;
+    @Embedded
+    private Direccion direccion;
 
-    public Paciente(DatosRegistroPaciente datosRegistroPaciente){
+    public Paciente(DatosRegistroPaciente datos){
         this.activo = true;
-        this.nombre = datosRegistroPaciente.nombre();
-        this.email = datosRegistroPaciente.email();
-        this.identidad = datosRegistroPaciente.identidad();
-        this.telefono = datosRegistroPaciente.telefono();
-        this.urbanizacion = datosRegistroPaciente.urbanizacion();
-        this.distrito = datosRegistroPaciente.distrito();
-        this.CP = datosRegistroPaciente.CP();
-        this.complemento = datosRegistroPaciente.complemento();
-        this.numero = datosRegistroPaciente.numero();
-        this.provincia = datosRegistroPaciente.provincia();
-        this.ciudad = datosRegistroPaciente.ciudad();
+        this.nombre = datos.nombre();
+        this.email = datos.email();
+        this.identidad = datos.identidad();
+        this.telefono = datos.telefono();
+        this.direccion = new Direccion((datos.direccion()));
     }
 
     public void actualizarInformacion(DatosActualizacionPaciente datos) {
-        if (datos.nombre() != null)
+        if (datos.nombre() != null) {
             this.nombre = datos.nombre();
-
-        if (datos.telefono() != null)
+        }
+        if (datos.telefono() != null) {
             this.telefono = datos.telefono();
-
+        }
+        if (datos.direccion() != null) {
+            this.direccion.actualizarDireccion(datos.direccion());
+        }
     }
 
     public void desactivarPaciente() {
