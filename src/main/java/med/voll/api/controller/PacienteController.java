@@ -1,5 +1,6 @@
 package med.voll.api.controller;
 
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import med.voll.api.domain.paciente.*;
@@ -13,6 +14,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 @RestController
 @RequestMapping("/pacientes")
+@SecurityRequirement(name = "bearer-key")
 public class PacienteController {
 
     @Autowired
@@ -20,18 +22,18 @@ public class PacienteController {
 
     @PostMapping
     @Transactional
-    public ResponseEntity registrarPaciente(@RequestBody @Valid DatosRegistroPaciente datosRegistroPaciente,
+    public ResponseEntity registrarPaciente(@RequestBody @Valid DatosRegistroPaciente datos,
                                             UriComponentsBuilder uriComponentsBuilder){
-        var paciente = new Paciente(datosRegistroPaciente);
+        var paciente = new Paciente(datos);
         pacienteRepository.save(paciente);
 
         var uri = uriComponentsBuilder.path("/pacientes/{id}").buildAndExpand(paciente.getId()).toUri();
-        return ResponseEntity.created(uri).body(new DatosDetalladoPaciente(paciente));
+        return ResponseEntity.created(uri).body(new DatosDetallesPaciente(paciente));
     }
 
     @GetMapping
     public ResponseEntity<Page<DatosListadoPaciente>> listadoPacientes(@PageableDefault(size = 10, sort = {"nombre"}) Pageable paginacion){
-        var page = pacienteRepository.findAll(paginacion).map(DatosListadoPaciente::new);
+        var page = pacienteRepository.findAllByActivoTrue(paginacion).map(DatosListadoPaciente::new);
         return ResponseEntity.ok(page);
 
     }
@@ -42,7 +44,7 @@ public class PacienteController {
         var paciente = pacienteRepository.getReferenceById(datosActualizacionPaciente.id());
         paciente.actualizarInformacion(datosActualizacionPaciente);
 
-        return ResponseEntity.ok(new DatosDetalladoPaciente(paciente));
+        return ResponseEntity.ok(new DatosDetallesPaciente(paciente));
     }
 
     @DeleteMapping("/{id}")
@@ -52,6 +54,13 @@ public class PacienteController {
         paciente.desactivarPaciente();
 
         return ResponseEntity.noContent().build();
+    }
+
+    public ResponseEntity detallar(@PathVariable Long id) {
+
+        var paciente = pacienteRepository.getReferenceById(id);
+        return ResponseEntity.ok(new DatosDetallesPaciente(paciente));
+
     }
 
 }
